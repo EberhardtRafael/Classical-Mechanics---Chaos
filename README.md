@@ -1,2 +1,2 @@
-# Classical-Mechanics---Chaos
-Simpke program to show chaotic behaviour.
+# Classical-Mechanics-Chaos
+Simple program to show chaotic behaviour.
