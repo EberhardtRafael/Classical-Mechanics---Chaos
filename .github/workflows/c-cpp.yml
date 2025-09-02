@@ -1,0 +1,43 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "*" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Cache build artifacts
+      - uses: actions/cache@v3
+        with:
+          path: build/
+          key: ${{ runner.os }}-build-${{ hashFiles('**/Makefile') }}
+
+      # Install the compiler from the matrix
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y ${{ matrix.compiler }}
+
+      # Configure & build
+      - name: Build
+        run: |
+          set -e
+          ./configure     # Or cmake . if using CMake
+          make
+
+      # Run tests
+      - name: Run tests
+        run: make check
+
+      # Optional: check dist packaging
+      - name: Dist check
+        run: make distcheck
