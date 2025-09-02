@@ -1,50 +1,51 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<matdT.h>
+#include<math.h>
+#include "helper.h"
 
 #define PI 3.14159265359
 #define A 0.13
 #define B 0.21
 #define C 6.5
-#define dT 0.0001
+#define dT 0.01
 
-double rossx(double *x, double *y, double *z, int nsteps){
-    
-    if(nsteps) x[nsteps+1] = x[nsteps] + dT*(-y - z);
-    else 
-    y[nsteps+1] = y[nsteps] + dT*(x + A*y);
-    z[nsteps+1] = z[nsteps] + dT*(B + z*(x - C)); 
-    //t += dT;
-    
-    return x;
+// Function to compute next step of Rössler attractor
+void rossler_step(double *x, double *y, double *z, int i) {
+    x[i+1] = x[i] + dT * (-y[i] - z[i]);
+    y[i+1] = y[i] + dT * (x[i] + A*y[i]);
+    z[i+1] = z[i] + dT * (B + z[i]*(x[i] - C));
 }
-
 
 int main(){
 
-int numsteps = 50;
-double x[numsteps, y[numsteps], z[numsteps];
-float a, b, c;
+    int numsteps = 100000;
+    double x[numsteps], y[numsteps], z[numsteps];
 
-float t_ini = 0;
-float t_fin = 32*PI;
-float t = t_ini;
+    // Initial conditions
+    x[0] = 0.0;
+    y[0] = 0.0;
+    z[0] = 0.0;
 
-//int numsteps = (int)((t_fin-t_ini)/dT);
+    char outputFile[] = "rossler.dat";
+    char gnuplotFile[] = "plot_rossler.gp";
+    char gnuplotOutput[] = "rossler.png";
 
+    FILE *fp = fopen(outputFile, "w");
+    if (!fp) { printf("Error opening file\n"); return 1; }
 
-x = 0;
-y = 0;
-z = 0;
+    for(int i = 0; i < numsteps-1; i++) {
+        rossler_step(x, y, z, i);
+    }
 
+    for(int i = 0; i < numsteps - 1; i++) {
+        fprintf(fp, "%f %f %f\n", x[i], y[i], z[i]);
+    }
+    fclose(fp);
 
-for(int i = 0; i < numsteps; i++){
+    generate_gnuplot_script(outputFile, gnuplotOutput);
 
-    printf("%f \t %lf\n",t, y);
-    
-   	
-}
+    printf("Data saved to rossler.dat and Gnuplot script %s generated.\n", gnuplotFile);
+    printf("Run: gnuplot %s to create %s\n", gnuplotFile, gnuplotOutput);
 
-
-return 0;
+    return 0;
 }
